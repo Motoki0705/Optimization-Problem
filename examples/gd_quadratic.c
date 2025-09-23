@@ -1,8 +1,7 @@
 #include <stdio.h>
 
 #include "gd/callbacks.h"
-#include "gd/model.h"
-#include "gd/trainer.h"
+
 
 static double quad_objective(const double *x, size_t dim, void *ctx) {
     (void)ctx;
@@ -38,13 +37,11 @@ int main(void) {
 
     GD_CallbackSlot callbacks[] = {
         {gd_cb_csv_logger, &logger},
+
     };
 
     GD_TrainStats stats = gd_train_minimize(&model, &cfg, x, callbacks, 1);
 
     gd_csv_logger_close(&logger);
 
-    printf("Result: x=%.6f f=%.6f iterations=%zu converged=%d\n",
-           x[0], stats.final_value, stats.iterations, stats.converged);
-    return 0;
-}
+

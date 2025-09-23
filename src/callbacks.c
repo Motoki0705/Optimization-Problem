@@ -66,6 +66,7 @@ void gd_cb_csv_logger(const GD_TrainerState *state, void *userdata) {
     fflush(logger->stream);
 }
 
+
 void gd_cb_print(const GD_TrainerState *state, void *userdata) {
     if (!state) {
         return;

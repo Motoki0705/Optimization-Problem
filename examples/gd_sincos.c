@@ -2,6 +2,7 @@
 #include <stdio.h>
 
 #include "gd/callbacks.h"
+
 #include "gd/model.h"
 #include "gd/trainer.h"
 
@@ -44,6 +45,7 @@ int main(void) {
 
     GD_CallbackSlot callbacks[] = {
         {gd_cb_csv_logger, &logger},
+
         {gd_cb_lr_decay, &decay},
         {gd_cb_early_stop, &stop},
     };
@@ -51,6 +53,7 @@ int main(void) {
     GD_TrainStats stats = gd_train_minimize(&model, &cfg, x, callbacks, 3);
 
     gd_csv_logger_close(&logger);
+
 
     printf("Result: x=(%.6f, %.6f) f=%.6f iterations=%zu converged=%d stopped=%d\n",
            x[0], x[1], stats.final_value, stats.iterations, stats.converged,
