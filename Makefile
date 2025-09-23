@@ -1,4 +1,4 @@
-CC ?= cc
+CC = gcc
 CFLAGS ?= -std=c11 -Wall -Wextra -pedantic -O2 -Iinclude -Isrc
 AR ?= ar
 ARFLAGS ?= rcs
@@ -16,9 +16,8 @@ src/%.o: src/%.c
 	$(CC) $(CFLAGS) -c -o $@ $<
 
 examples: $(LIB)
-	$(CC) $(CFLAGS) -o examples/gd_quadratic examples/gd_quadratic.c $(LIB) -lm
-	$(CC) $(CFLAGS) -o examples/gd_sincos examples/gd_sincos.c $(LIB) -lm
-
+	$(CC) $(CFLAGS) -o examples/gd1d.o examples/gd1d.c $(LIB) -lm
+	$(CC) $(CFLAGS) -o examples/gd2d.o examples/gd2d.c $(LIB) -lm
 clean:
 	rm -f $(OBJS) $(LIB) examples/gd_quadratic examples/gd_sincos
 

@@ -1,0 +1,21 @@
+# output files
+*.csv
+*.png
+outputs/
+
+# Compiled object files
+*.o
+
+# Compiled binary files
+*.out
+*.exe
+
+# Libraries
+*.so
+*.a
+*.dll
+
+# Debug / profiling files
+*.dSYM/
+*.stackdump
+
