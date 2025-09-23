@@ -2,6 +2,8 @@
 #define GD_CALLBACKS_H
 
 #include <stddef.h>
+#include <stdio.h>
+
 
 #include "types.h"
 
@@ -26,6 +28,16 @@ typedef struct {
     GD_Callback fn;
     void *userdata;
 } GD_CallbackSlot;
+
+typedef struct {
+    FILE *stream;
+    int wrote_header;
+    int owns_stream;
+} GD_CSVLogger;
+
+int gd_csv_logger_open(GD_CSVLogger *logger, const char *path);
+void gd_csv_logger_close(GD_CSVLogger *logger);
+void gd_cb_csv_logger(const GD_TrainerState *state, void *userdata);
 
 void gd_cb_print(const GD_TrainerState *state, void *userdata);
 
