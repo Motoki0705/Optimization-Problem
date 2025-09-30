@@ -1,11 +1,11 @@
 # 最適化フレームワークのアーキテクチャ概要
 
-このドキュメントでは、教育用途およびプロトタイピング向けに設計された軽量な最適化フレームワークの全体構造と設計思想を説明します。本フレームワークは勾配降下法を中心に、目的関数の定義から学習ループ、コールバックを用いた拡張まで、一貫した流れで利用できることを目的としています。
+このドキュメントでは、教育用途およびプロトタイピング向けに設計された軽量な最適化フレームワークの全体構造と設計思想を説明します。本フレームワークは勾配降下法を中心に、目的関数の定義から学習ループ、コールバックを用いた拡張まで、一貫した流れで利用できることを目的としています。リポジトリ再編により、勾配降下モジュールは `topics/gradient_descent/` 以下に移動し、トピックごとに独立した構造を保ちながら共通のビルドシステムを共有しています。
 
 ## 1. 全体像
 
 ```
-アプリケーション (examples)
+アプリケーション (topics/gradient_descent/examples)
     ↓
 トレーナー (trainer)
     ↓
@@ -20,27 +20,27 @@
 
 ## 2. 主なモジュールと責務
 
-### 2.1 型定義 (`include/gd/types.h`)
+### 2.1 型定義 (`topics/gradient_descent/include/gd/types.h`)
 
 * `GD_Scalar` や `GD_Vector` といった基本的な数値型、配列ハンドルを定義します。
 * 共通で利用する列挙型やステータスコードもここに集約されています。
 
-### 2.2 モデル (`include/gd/model.h`, `src/model.c`)
+### 2.2 モデル (`topics/gradient_descent/include/gd/model.h`, `topics/gradient_descent/src/model.c`)
 
 * ユーザーが定義する目的関数 `f(x)` と勾配 `g(x)` のインターフェースを規定します。
 * 勾配が未提供の場合のハンドリングはロスモジュールが担当します。
 
-### 2.3 ロス (`include/gd/loss.h`, `src/loss.c`)
+### 2.3 ロス (`topics/gradient_descent/include/gd/loss.h`, `topics/gradient_descent/src/loss.c`)
 
 * モデルから目的関数値を取得し、必要に応じて有限差分による数値勾配を計算します。
 * 数値微分のステップ幅はデフォルトで `1e-6` に設定されています。
 
-### 2.4 オプティマイザ (`include/gd/optim.h`, `src/optim.c`)
+### 2.4 オプティマイザ (`topics/gradient_descent/include/gd/optim.h`, `topics/gradient_descent/src/optim.c`)
 
 * 勾配降下法のパラメータ更新を実装します。
 * 学習率や許容誤差などのハイパーパラメータを `GD_OptimConfig` で管理します。
 
-### 2.5 トレーナー (`include/gd/trainer.h`, `src/trainer.c`)
+### 2.5 トレーナー (`topics/gradient_descent/include/gd/trainer.h`, `topics/gradient_descent/src/trainer.c`)
 
 * 学習ループの中核として、以下の手順を繰り返します。
   1. 現在のパラメータで目的関数値を評価。
@@ -50,26 +50,27 @@
   5. オプティマイザに更新を指示してパラメータを更新。
 * 最大反復回数や収束判定を管理します。
 
-### 2.6 コールバック (`include/gd/callbacks.h`, `src/callbacks.c`)
+### 2.6 コールバック (`topics/gradient_descent/include/gd/callbacks.h`, `topics/gradient_descent/src/callbacks.c`)
 
 * 任意の処理を各イテレーションで実行できるフック機構を提供します。
 * 組み込みコールバックとして、標準出力へのログ表示や CSV への進捗記録などを実装しています。
 * 学習率スケジューラや早期終了ロジックなど、追加の機能もコールバックで拡張可能です。
 
-### 2.7 ユーティリティ (`src/utils.c`, `src/utils.h`)
+### 2.7 ユーティリティ (`topics/gradient_descent/src/utils.c`, `topics/gradient_descent/src/utils.h`)
 
 * ベクトル操作や安全なファイル操作など、モジュール間で共有される補助関数を定義します。
 
 ## 3. ディレクトリ構成
 
 ```
-include/gd/   … 公開ヘッダー群 (API)
-src/          … 実装ファイル
-examples/     … 使い方を示すサンプルプログラム
-Makefile, CMakeLists.txt … ビルド・テスト用ツール
+topics/gradient_descent/
+  include/gd/   … 公開ヘッダー群 (API)
+  src/          … 実装ファイル
+  examples/     … サンプルプログラムと補助スクリプト
+scripts/run_gradient_descent.sh … ビルドとデモ実行用ヘルパー
 ```
 
-サンプルとして `gd_quadratic.c` と `gd_sincos.c` があり、解析的勾配と数値勾配の両方を利用した最適化の流れを示しています。各サンプルでは CSV ロガーコールバックを用いて学習過程をファイルに記録します。
+サンプルとして `gd1d.c` と `gd2d.c` があり、1 変数および 2 変数の関数最小化の流れを示しています。各サンプルでは CSV ロガー（`scripts/run_gradient_descent.sh` から実行）を用いて学習過程をファイルに記録します。
 
 ## 4. トレーニングループのライフサイクル
 
@@ -100,11 +101,13 @@ Makefile, CMakeLists.txt … ビルド・テスト用ツール
 ## 7. ビルドと実行
 
 ```
-$ make examples
-$ ./examples/gd_quadratic
-$ ./examples/gd_sincos
+# 1D のデモをビルド・実行
+scripts/run_gradient_descent.sh --example 1d
+
+# 2D のデモをビルド・実行
+scripts/run_gradient_descent.sh --example 2d
 ```
 
-ビルド済みの例では、実行ディレクトリに CSV ファイルが生成され、トレーニング過程の記録を確認できます。
+生成された CSV は `topics/gradient_descent/examples/outputs/` に配置され、トレーニング過程の記録を確認できます。
 
-以上が本フレームワークのアーキテクチャ概要です。ヘッダーファイルで公開された API を参照しながら、必要に応じて各モジュールを拡張し、自分の用途に合わせた最適化実験に活用してください。
+以上が勾配降下モジュールのアーキテクチャ概要です。ヘッダーファイルで公開された API を参照しながら、必要に応じて各モジュールを拡張し、自分の用途に合わせた最適化実験に活用してください。
