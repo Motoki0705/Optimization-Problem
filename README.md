@@ -4,7 +4,7 @@ This repository collects optimization routines as independent "topics" that can 
 
 ## Requirements
 
-- C compiler with C11 support (tested with GCC/Clang)
+- C++17 capable compiler (tested with GCC/Clang)
 - CMake 3.16 or newer
 - POSIX shell environment for the helper scripts
 
@@ -34,7 +34,7 @@ The generated binaries live in `build/topics/<topic-name>/`.
 
 ## Topic: Gradient Descent
 
-Gradient based minimisation utilities that were already present in the project. The helper script compiles the library and runs a demo problem, writing the optimisation trace as CSV.
+Gradient based minimisation utilities implemented with a small set of C++ classes (`gd::Objective`, `gd::Trainer`, callbacks, etc.). The helper script compiles the library and runs a demo problem, writing the optimisation trace as CSV.
 
 ```
 scripts/run_gradient_descent.sh --example 1d   # cubic polynomial minimum (default)

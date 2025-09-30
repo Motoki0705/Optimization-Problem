@@ -1,19 +1,19 @@
 add_library(gd STATIC
-    src/model.c
-    src/loss.c
-    src/optim.c
-    src/trainer.c
-    src/callbacks.c
-    src/utils.c
+    src/gradient_descent.cpp
 )
+
+target_compile_features(gd PUBLIC cxx_std_17)
 
 target_include_directories(gd
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-add_executable(gd1d examples/gd1d.c)
-target_link_libraries(gd1d PRIVATE gd m)
+add_executable(gd1d examples/gd1d.cpp)
+target_link_libraries(gd1d PRIVATE gd)
 
-add_executable(gd2d examples/gd2d.c)
-target_link_libraries(gd2d PRIVATE gd m)
+target_compile_features(gd1d PRIVATE cxx_std_17)
+
+add_executable(gd2d examples/gd2d.cpp)
+target_link_libraries(gd2d PRIVATE gd)
+
+target_compile_features(gd2d PRIVATE cxx_std_17)
