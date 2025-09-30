@@ -1,21 +1,25 @@
-# output files
-*.csv
-*.png
-outputs/
+# CMake out-of-source build dir
+/build/
+build/
 
-# Compiled object files
+# CMake files (if anyone ever built in-source)
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Compiled objects & deps
 *.o
-
-# Compiled binary files
-*.out
-*.exe
-
-# Libraries
-*.so
+*.o.d
+*.obj
 *.a
+*.lib
+*.so
+*.dylib
 *.dll
+*.exe
+*.out
 
-# Debug / profiling files
-*.dSYM/
-*.stackdump
+# Misc
+compile_commands.json
 

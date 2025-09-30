@@ -6,6 +6,7 @@ BUILD_DIR="${BUILD_DIR:-$ROOT_DIR/build}"
 DEFAULT_INPUT="$ROOT_DIR/topics/simplex/examples/sample.lp"
 INPUT_PATH="$DEFAULT_INPUT"
 
+echo "$ROOT_DIR" >&2
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --input)

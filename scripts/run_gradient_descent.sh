@@ -3,7 +3,7 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="${BUILD_DIR:-$ROOT_DIR/build}"
-EXAMPLE="1d"
+EXAMPLE="2d"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -32,8 +32,8 @@ case "$EXAMPLE" in
         CSV_PATH="$OUTPUT_DIR/gd1d.csv"
         "$BUILD_DIR/topics/gradient_descent/gd1d" \
             --a3 1 --a2 -6 --a1 11 --a0 -6 \
-            --alpha 0.05 --eps 1e-6 --max-iters 200 \
-            --x0 0.5 --csv "$CSV_PATH"
+            --alpha 0.0005 --eps 1e-6 --max-iters 2000 \
+            --x0 2.0 --csv "$CSV_PATH"
         echo "Generated 1D gradient descent trace at $CSV_PATH"
         ;;
     2d)

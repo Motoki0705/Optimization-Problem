@@ -5,10 +5,12 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 
 namespace gd {
 
+// ------------------------- Objective -------------------------
 Objective::Objective(std::size_t dimension, double finiteDifferenceStep)
     : dimension_(dimension), finiteDifferenceStep_(finiteDifferenceStep) {
     if (dimension_ == 0) {
@@ -25,18 +27,18 @@ void Objective::setFiniteDifferenceStep(double step) noexcept {
     }
 }
 
-Vector Objective::analyticGradient(const Vector &x) const {
+Vector Objective::analyticGradient(const Vector& x) const {
     (void)x;
     throw std::logic_error("Analytic gradient not implemented");
 }
 
-void Objective::ensureDimension(const Vector &x) const {
+void Objective::ensureDimension(const Vector& x) const {
     if (x.size() != dimension_) {
         throw std::invalid_argument("Vector dimension mismatch");
     }
 }
 
-Vector Objective::gradient(const Vector &x) const {
+Vector Objective::gradient(const Vector& x) const {
     ensureDimension(x);
     if (hasAnalyticGradient()) {
         return analyticGradient(x);
@@ -57,6 +59,7 @@ Vector Objective::gradient(const Vector &x) const {
     return grad;
 }
 
+// ------------------------- Optimizer Config -------------------------
 void OptimConfig::applyDefaults() {
     if (!(learningRate > 0.0)) {
         learningRate = 0.1;
@@ -72,30 +75,31 @@ void OptimConfig::applyDefaults() {
     }
 }
 
-void GradientDescentOptimizer::step(const OptimConfig &config, Vector &x, const Vector &gradient) const {
+// ------------------------- Optimizer Step -------------------------
+void GradientDescentOptimizer::step(const OptimConfig& config, Vector& x, const Vector& gradient) const {
     for (std::size_t i = 0; i < x.size(); ++i) {
         x[i] -= config.learningRate * gradient[i];
     }
 }
 
+// ------------------------- CSV Logger -------------------------
 CsvLogger::CsvLogger(std::string path)
     : path_(std::move(path)) {}
 
 CsvLogger::~CsvLogger() = default;
 
 void CsvLogger::ensureStream() {
-    if (stream_) {
-        return;
-    }
+    if (stream_) return;
+
     ownedStream_ = std::make_unique<std::ofstream>(path_, std::ios::out | std::ios::trunc);
-    std::ofstream *file = dynamic_cast<std::ofstream *>(ownedStream_.get());
+    auto* file = dynamic_cast<std::ofstream*>(ownedStream_.get());
     if (!file || !*file) {
         throw std::runtime_error("Failed to open CSV file: " + path_);
     }
     stream_ = ownedStream_.get();
 }
 
-void CsvLogger::onIteration(const TrainerState &state) {
+void CsvLogger::onIteration(TrainerState& state) {
     ensureStream();
     if (!wroteHeader_) {
         (*stream_) << "iter,value,grad_norm_inf,lr";
@@ -117,14 +121,16 @@ void CsvLogger::onIteration(const TrainerState &state) {
     stream_->flush();
 }
 
-ConsoleLogger::ConsoleLogger(std::ostream &out)
+// ------------------------- Console Logger -------------------------
+ConsoleLogger::ConsoleLogger(std::ostream& out)
     : stream_(&out) {}
 
-std::ostream &ConsoleLogger::defaultStream() {
+std::ostream& ConsoleLogger::defaultStream() {
     return std::cout;
 }
 
-void ConsoleLogger::onIteration(const TrainerState &state) {
+void ConsoleLogger::onIteration(TrainerState& state) {
+    (void)state; // you can print more or less as you like
     (*stream_) << "iter=" << state.iteration
                << " value=" << std::setprecision(6) << state.value
                << " |grad|_inf=" << state.gradNormInf
@@ -132,32 +138,36 @@ void ConsoleLogger::onIteration(const TrainerState &state) {
                << '\n';
 }
 
+// ------------------------- LR Decay -------------------------
 LearningRateDecay::LearningRateDecay(double factor, std::size_t period, double minLearningRate)
     : factor_(factor), period_(period), minLearningRate_(minLearningRate) {}
 
-void LearningRateDecay::onIteration(const TrainerState &state) {
-    if (period_ == 0 || state.iteration == 0) {
-        return;
-    }
+void LearningRateDecay::onIteration(TrainerState& state) {
+    if (period_ == 0 || state.iteration == 0) return;
     if (state.iteration % period_ == 0) {
         state.config.learningRate = std::max(state.config.learningRate * factor_, minLearningRate_);
     }
 }
 
+// ------------------------- Early Stop -------------------------
 EarlyStop::EarlyStop(double targetValue)
     : targetValue_(targetValue) {}
 
-void EarlyStop::onIteration(const TrainerState &state) {
+void EarlyStop::onIteration(TrainerState& state) {
     if (state.value <= targetValue_) {
         state.stop = true;
     }
 }
 
-TrainStats Trainer::minimize(Objective &objective,
-                             Vector &x,
-                             OptimConfig &config,
-                             const std::vector<std::shared_ptr<Callback>> &callbacks) const {
-    objective.ensureDimension(x);
+// ------------------------- Trainer -------------------------
+TrainStats Trainer::minimize(Objective& objective,
+                             Vector& x,
+                             OptimConfig& config,
+                             const std::vector<std::shared_ptr<Callback>>& callbacks) const {
+    // ✅ Do not call protected ensureDimension here. Check via public API.
+    if (x.size() != objective.dimension()) {
+        throw std::invalid_argument("Vector dimension mismatch");
+    }
     config.applyDefaults();
     objective.setFiniteDifferenceStep(config.numericGradientStep);
 
@@ -176,10 +186,8 @@ TrainStats Trainer::minimize(Objective &objective,
         stats.finalGradNorm = gradNorm;
 
         TrainerState state{iter, value, gradNorm, x, grad, objective, config, stop};
-        for (const auto &cb : callbacks) {
-            if (cb) {
-                cb->onIteration(state);
-            }
+        for (const auto& cb : callbacks) {
+            if (cb) cb->onIteration(state);
         }
 
         if (stop) {
@@ -198,7 +206,7 @@ TrainStats Trainer::minimize(Objective &objective,
     return stats;
 }
 
-double Trainer::infNorm(const Vector &values) {
+double Trainer::infNorm(const Vector& values) {
     double norm = 0.0;
     for (double v : values) {
         norm = std::max(norm, std::fabs(v));
@@ -207,3 +215,4 @@ double Trainer::infNorm(const Vector &values) {
 }
 
 } // namespace gd
+
