@@ -43,6 +43,17 @@ scripts/run_gradient_descent.sh --example 2d   # quadratic surface minimum
 
 The CSV files are placed under `topics/gradient_descent/examples/outputs/` for easy plotting.
 
+Plot the built-in examples with:
+```
+scripts/plot_gd1d.sh -a <a3> -b <a2> -c <a1> -d <a0> \
+  -i topics/gradient_descent/examples/outputs/gd1d.csv \
+  -o topics/gradient_descent/examples/outputs/gd1d.png
+scripts/plot_gd2d.sh -A <a11> -B <a22> -C <a12> -p <b1> -q <b2> -r <c0> \
+  -i topics/gradient_descent/examples/outputs/gd2d.csv \
+  -o topics/gradient_descent/examples/outputs/gd2d.png
+```
+Use `--help` on either script to see optional styling flags, output formats, and range overrides.
+
 ## Topic: Simplex Method
 
 Implements the primal simplex algorithm for linear programmes in standard form (maximize `c^T x` subject to `A x <= b`, `x >= 0`). A small CLI wraps the solver and reads a plain-text input format:
